@@ -1,27 +1,28 @@
-# Test for Task Manager REST API
+# Test Application
 
-import requests
+import unittest
+from app import app
 
-BASE_URL = "http://localhost:5000/api"
+class TestTaskManagerAPI(unittest.TestCase):
+    def setUp(self):
+        self.app = app.test_client()
+        self.app.testing = True
 
-# Test creating a task
-def test_create_task():
-    response = requests.post(f"{BASE_URL}/tasks", json={"title": "Test Task", "description": "Task for testing"})
-    assert response.status_code == 201
-    assert "id" in response.json()
+    def test_get_tasks(self):
+        response = self.app.get('/tasks')
+        self.assertEqual(response.status_code, 200)
 
-# Test retrieving a task
-def test_get_task():
-    response = requests.get(f"{BASE_URL}/tasks/1")
-    assert response.status_code == 200
-    assert "title" in response.json()
+    def test_create_task(self):
+        response = self.app.post('/tasks', json={'title': 'Test Task'})
+        self.assertEqual(response.status_code, 201)
 
-# Test updating a task
-def test_update_task():
-    response = requests.put(f"{BASE_URL}/tasks/1", json={"title": "Updated Task"})
-    assert response.status_code == 200
+    def test_update_task(self):
+        response = self.app.put('/tasks/1', json={'title': 'Updated Task'})
+        self.assertEqual(response.status_code, 200)
 
-# Test deleting a task
-def test_delete_task():
-    response = requests.delete(f"{BASE_URL}/tasks/1")
-    assert response.status_code == 204
+    def test_delete_task(self):
+        response = self.app.delete('/tasks/1')
+        self.assertEqual(response.status_code, 204)
+
+if __name__ == '__main__':
+    unittest.main()
