@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminder App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-app="reminderApp">
+    <div ng-controller="ReminderController">
+        <h1>Reminder App</h1>
+        <input type="text" ng-model="newReminder" placeholder="Add a new reminder">
+        <button ng-click="addReminder()">Add</button>
+        <ul>
+            <li ng-repeat="reminder in reminders">{{ reminder }}</li>
+        </ul>
+    </div>
+
+    <script>
+        angular.module('reminderApp', [])
+            .controller('ReminderController', function($scope) {
+                $scope.reminders = [];
+                $scope.addReminder = function() {
+                    if ($scope.newReminder) {
+                        $scope.reminders.push($scope.newReminder);
+                        $scope.newReminder = '';
+                    }
+                };
+            });
+    </script>
+</body>
+</html>
