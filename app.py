@@ -1,58 +1,26 @@
-from flask import Flask, render_template, request, redirect, url_for
-from datetime import datetime
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# ---------- IN-MEMORY STORAGE ----------
-reminders = []  # Each reminder will be a dict with keys: id, title, date, time, day_of_week
-next_id = 1
+# Sample data (In a real application, this would be replaced with a database)
+reminders = []
 
-# ---------- AUTO DELETE EXPIRED ----------
-def delete_expired_reminders():
-    global reminders
-    today = datetime.now().strftime("%Y-%m-%d")
-    reminders = [r for r in reminders if r['date'] >= today]
-
-# ---------- FETCH ALL REMINDERS ----------
+@app.route('/reminders', methods=['GET'])
 def get_reminders():
-    delete_expired_reminders()
-    return reminders
+    return jsonify(reminders), 200
 
-@app.route('/')
-def index():
-    all_reminders = get_reminders()
-    week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    week_data = {day: [] for day in week_days}
-    for r in all_reminders:
-        week_data[r['day_of_week']].append(r)
-    return render_template("index.html", week_data=week_data, title="Reminder")
+@app.route('/reminders', methods=['POST'])
+def create_reminder():
+    data = request.get_json()
+    reminder = {'id': len(reminders) + 1, 'task': data['task']}
+    reminders.append(reminder)
+    return jsonify(reminder), 201
 
-@app.route('/add', methods=['POST'])
-def add():
-    global next_id
-    title = request.form.get('title')
-    date = request.form.get('date')
-    time = request.form.get('time')
-
-    if title and date and time:
-        dt = datetime.strptime(date, "%Y-%m-%d")
-        day_of_week = dt.strftime("%A")
-        reminders.append({
-            'id': next_id,
-            'title': title,
-            'date': date,
-            'time': time,
-            'day_of_week': day_of_week
-        })
-        next_id += 1
-
-    return redirect(url_for('index'))
-
-@app.route('/delete/<int:rem_id>')
-def delete(rem_id):
+@app.route('/reminders/<int:reminder_id>', methods=['DELETE'])
+def delete_reminder(reminder_id):
     global reminders
-    reminders = [r for r in reminders if r['id'] != rem_id]
-    return redirect(url_for('index'))
+    reminders = [r for r in reminders if r['id'] != reminder_id]
+    return jsonify({'result': True}), 204
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
